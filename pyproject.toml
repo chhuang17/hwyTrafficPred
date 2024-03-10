@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "route-planning"
+version = "0.1.0"
+description = ""
+authors = ["Will"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+pandas = "^2.2.0"
+sqlalchemy = "^2.0.27"
+pymysql = "^1.1.0"
+feather-format = "^0.4.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
