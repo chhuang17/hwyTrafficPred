@@ -12,6 +12,7 @@ pandas = "^2.2.0"
 sqlalchemy = "^2.0.27"
 pymysql = "^1.1.0"
 feather-format = "^0.4.1"
+torch = "^2.2.1"
 
 
 [build-system]
