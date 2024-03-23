@@ -13,6 +13,8 @@ sqlalchemy = "^2.0.27"
 pymysql = "^1.1.0"
 feather-format = "^0.4.1"
 torch = "^2.2.1"
+polars = "^0.20.16"
+scikit-learn = "^1.4.1.post1"
 
 
 [build-system]
