@@ -48,6 +48,8 @@ def min_max_scaler(arr: np.ndarray, feature: str) -> np.ndarray:
     elif (feature == 'volume'):
         arr = np.where(arr>=600, 600, arr)
         return np.where(arr<0, -1, arr/600)
+    elif (feature == 'lane'):
+        return np.where(arr<0, 0, arr/4)
     else:
         raise ValueError(f"'{feature}'")
 
@@ -135,7 +137,7 @@ class CNNDataset(Dataset):
         f1 = min_max_scaler(self.speedFeature[idx], 'speed')
         f2 = min_max_scaler(self.volFeature[idx], 'volume')
         f3 = min_max_scaler(self.occFeature[idx], 'occ')
-        f4 = self.laneFeature[idx]
+        f4 = min_max_scaler(self.laneFeature[idx], 'lane')
         f5 = self.tunnelFeature[idx]
         
         l1 = min_max_scaler(self.speedLabels[idx], 'speed')
