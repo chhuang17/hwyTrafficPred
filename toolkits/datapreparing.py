@@ -141,7 +141,7 @@ def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, timeW
         vols.append((volMatx[:,x:x+sliceLen][:,:-1], volMatx[:,x:x+sliceLen][:,[-1]]))
         occs.append((occMatx[:,x:x+sliceLen][:,:-1], occMatx[:,x:x+sliceLen][:,[-1]]))
         lanes.append((laneMatx[:,x:x+sliceLen][:,:-1], laneMatx[:,x:x+sliceLen][:,[-1]]))
-        tunnels.append((occMatx[:,x:x+sliceLen][:,:-1], tunnelMatx[:,x:x+sliceLen][:,[-1]]))
+        tunnels.append((tunnelMatx[:,x:x+sliceLen][:,:-1], tunnelMatx[:,x:x+sliceLen][:,[-1]]))
     
     return speeds, vols, occs, lanes, tunnels
 
