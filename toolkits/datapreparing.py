@@ -13,14 +13,26 @@ engine = create_engine(os.getenv('DB_ENGINE'))
 
 def getRollingMeanDaily(selectDate: str) -> pd.DataFrame:
     sql  = " SELECT "
-    sql += " 	STAC.VDID, STAC.RoadName, STAC.`Start`, STAC.`End`, "
-    sql += " 	STAC.RoadDirection, DYMC.Speed, DYMC.Occupancy, DYMC.Volume, "
+    sql += " 	STAC.VDID, STAC.RoadName, STAC.`Start`, STAC.`End`, STAC.RoadDirection, "
+    sql += "    CASE "
+    sql += "        WHEN DYMC.Occupancy = 0 AND DYMC.Volume = 0 THEN 100 "
+    sql += "        ELSE DYMC.Speed "
+    sql += " 	END AS Speed, "
+    sql += "    DYMC.Occupancy, DYMC.Volume, "
     sql += " 	STAC.ActualLaneNum, STAC.LocationMile, STAC.isTunnel, DYMC.DataCollectTime "
     sql += " FROM ( "
     sql += " 	SELECT "
     sql += " 		VDSTC.id, VDSTC.VDID, ROAD.RoadName, SEC.`Start`, SEC.`End`, "
     sql += " 		VDSTC.ActualLaneNum, VDSTC.RoadDirection, VDSTC.LocationMile, "
     sql += "        CASE "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'S' AND VDSTC.LocationMile BETWEEN 0.238 AND 0.694 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'N' AND VDSTC.LocationMile BETWEEN 0.235 AND 0.690 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'S' AND VDSTC.LocationMile BETWEEN 0.694 AND 3.481 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'N' AND VDSTC.LocationMile BETWEEN 0.795 AND 3.515 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'S' AND VDSTC.LocationMile BETWEEN 7.677 AND 7.893 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'N' AND VDSTC.LocationMile BETWEEN 7.646 AND 7.894 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'S' AND VDSTC.LocationMile BETWEEN 9.442 AND 13.303 THEN 1 "
+    sql += " 	        WHEN VDSTC.RoadDirection = 'N' AND VDSTC.LocationMile BETWEEN 9.457 AND 13.263 THEN 1 "
     sql += " 	        WHEN VDSTC.RoadDirection = 'S' AND VDSTC.LocationMile BETWEEN 15.203 AND 28.128 THEN 1 "
     sql += " 	        WHEN VDSTC.RoadDirection = 'N' AND VDSTC.LocationMile BETWEEN 15.179 AND 28.134 THEN 1 "
     sql += " 	        ELSE 0 "
@@ -95,7 +107,7 @@ def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, timeW
         ---
         @Params
         df: 
-        vdGroups: The output of groupVDs(),
+        vdGroups: The outpur of groupVDs(),
         groupKey: The key of vdGroups,
         each: The quantity of VDs would be considered as a group,
         timeWindow: The length of period we consider, and the default value is 30 (minutes).
@@ -107,25 +119,31 @@ def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, timeW
         occs: list with each item as a tuple, all of them are represented (X,y).
         ```
     """
-    speeds, vols, occs = [], [], []
+    speeds, vols, occs, lanes, tunnels = [], [], [], [], []
     tmpDf = df.loc[(df['VDID'].isin(vdGroups[f"{groupKey}"]))].sort_values(by=['LocationMile', 'DataCollectTime'])
 
     indices = [x for x in range(0, tmpDf.shape[0]+1, tmpDf.shape[0]//each)]
     speedMatx = np.zeros((each, tmpDf.shape[0]//each))
     volMatx = np.zeros((each, tmpDf.shape[0]//each))
     occMatx = np.zeros((each, tmpDf.shape[0]//each))
+    laneMatx = np.zeros((each, tmpDf.shape[0]//each))
+    tunnelMatx = np.zeros((each, tmpDf.shape[0]//each))
     for i, j, k in zip(range(each), indices[:-1], indices[1:]):
         speedMatx[i] += tmpDf.iloc[j:k,:]['Speed'].to_numpy()
         volMatx[i] += tmpDf.iloc[j:k,:]['Volume'].to_numpy()
         occMatx[i] += tmpDf.iloc[j:k,:]['Occupancy'].to_numpy()
+        laneMatx[i] += tmpDf.iloc[j:k,:]['ActualLaneNum'].to_numpy()
+        tunnelMatx[i] += tmpDf.iloc[j:k,:]['isTunnel'].to_numpy()
 
     sliceLen = int((timeWindow / 5) + 1)
     for x in range(speedMatx.shape[1]//sliceLen*sliceLen-(sliceLen-1)):
         speeds.append((speedMatx[:,x:x+sliceLen][:,:-1], speedMatx[:,x:x+sliceLen][:,[-1]]))
         vols.append((volMatx[:,x:x+sliceLen][:,:-1], volMatx[:,x:x+sliceLen][:,[-1]]))
         occs.append((occMatx[:,x:x+sliceLen][:,:-1], occMatx[:,x:x+sliceLen][:,[-1]]))
+        lanes.append((laneMatx[:,x:x+sliceLen][:,:-1], laneMatx[:,x:x+sliceLen][:,[-1]]))
+        tunnels.append((occMatx[:,x:x+sliceLen][:,:-1], tunnelMatx[:,x:x+sliceLen][:,[-1]]))
     
-    return speeds, vols, occs
+    return speeds, vols, occs, lanes, tunnels
 
 def download_monthly_tables(start: str, end: str, dest_dir: str, file_format: str = 'feather') -> None:
     """ Download monthly tables from db
@@ -182,25 +200,29 @@ def concat_tables(folder: str = './nfb2023', file_format: str = 'feather'):
 def collect_data(each_group: int = 3, data_dir: str = './nfb2023', file_format: str = 'feather'):
     df = concat_tables(folder=data_dir, file_format=file_format)
     
-    speedCollection, volCollection, occCollection = [], [], []
+    speedCollection, volCollection, occCollection, laneCollection, tunnelCollection = [], [], [], [], []
 
     # Northbound data
     northDf = df.loc[df['RoadDirection']=='N'].reset_index(drop=True)
     northVDGrps = groupVDs(northDf, each=each_group)
     for groupKey in northVDGrps.keys():
-        speeds, vols, occs = genSamples(northDf, northVDGrps, groupKey, each=each_group, timeWindow=30)
+        speeds, vols, occs, lanes, tunnels = genSamples(northDf, northVDGrps, groupKey, each=each_group, timeWindow=30)
         speedCollection += speeds
         volCollection += vols
         occCollection += occs
+        laneCollection += lanes
+        tunnelCollection += tunnels
 
     # Southbound data
     southDf = df.loc[df['RoadDirection']=='S'].reset_index(drop=True)
     southVDGrps = groupVDs(southDf, each=each_group)
     for groupKey in southVDGrps.keys():
-        speeds, vols, occs = genSamples(southDf, southVDGrps, groupKey, each=each_group, timeWindow=30)
+        speeds, vols, occs, lanes, tunnels = genSamples(southDf, southVDGrps, groupKey, each=each_group, timeWindow=30)
         speedCollection += speeds
         volCollection += vols
         occCollection += occs
+        laneCollection += lanes
+        tunnelCollection += tunnels
 
-    return speedCollection, volCollection, occCollection
+    return speedCollection, volCollection, occCollection, laneCollection, tunnelCollection
 
