@@ -15,6 +15,9 @@ feather-format = "^0.4.1"
 torch = "^2.2.1"
 polars = "^0.20.16"
 scikit-learn = "^1.4.1.post1"
+tqdm = "^4.66.2"
+python-dotenv = "^1.0.1"
+h5py = "^3.10.0"
 
 
 [build-system]
