@@ -194,8 +194,10 @@ def concat_tables(folder: str = './nfb2023', file_format: str = 'feather'):
             currDf = pd.concat(df).reset_index(drop=True)
             monthlyDf = monthlyDf.loc[monthlyDf['VDID'].isin(set(currDf['VDID']))]
             df.append(monthlyDf)
-    
-    return pd.concat(df).reset_index(drop=True)
+
+    df = pd.concat(df)
+    df = df.loc[(df['Speed']<=120) & (df['Volume']<=3200/12)].reset_index(drop=True)    
+    return df
 
 def collect_data(each_group: int = 3, data_dir: str = './nfb2023', file_format: str = 'feather'):
     df = concat_tables(folder=data_dir, file_format=file_format)
