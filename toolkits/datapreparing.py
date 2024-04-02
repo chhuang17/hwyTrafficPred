@@ -56,7 +56,7 @@ def getRollingMeanDaily(selectDate: str) -> pd.DataFrame:
     sql += " 		END AS Occupancy,  "
     sql += " 		CASE "
     sql += " 			WHEN MIN(Volume) = -99 THEN -99 "
-    sql += " 			ELSE AVG(Volume) "
+    sql += " 			ELSE SUM(Volume) "
     sql += " 		END AS Volume, "
     sql += " 		MAX(DataCollectTime) AS DataCollectTime, "
     sql += " 		(UNIX_TIMESTAMP(DataCollectTime)-UNIX_TIMESTAMP(%(selectDate)s)) DIV 300 "
