@@ -98,17 +98,16 @@ class CNNDataset(Dataset):
             self.speedFeature, self.volFeature, self.occFeature, self.laneFeature, self.tunnelFeature =\
                 [], [], [], [], []            
             self.speedLabels, self.volLabels = [], []
-            for x in range(len(speed_data)):
-                # Labels must be valid (>=0), or it will be dropped.
-                if (speed_data[x][1][1][0] >= 0) and (volume_data[x][1][1][0] >= 0):                
-                    self.speedFeature.append(speed_data[x][0])
-                    self.volFeature.append(volume_data[x][0])
-                    self.occFeature.append(occupy_data[x][0])
-                    self.laneFeature.append(lane_data[x][0])
-                    self.tunnelFeature.append(tunnel_data[x][0])
+            valid_indices = [i for i, x in enumerate(speed_data) if x[1][1][0] >= 0 and volume_data[i][1][1][0] >= 0]
+            
+            self.speedFeature = np.array([speed_data[i][0] for i in valid_indices])
+            self.volFeature = np.array([volume_data[i][0] for i in valid_indices])
+            self.occFeature = np.array([occupy_data[i][0] for i in valid_indices])
+            self.laneFeature = np.array([lane_data[i][0] for i in valid_indices])
+            self.tunnelFeature = np.array([tunnel_data[i][0] for i in valid_indices])
 
-                    self.speedLabels.append(speed_data[x][1][[1],:])
-                    self.volLabels.append(volume_data[x][1][[1],:])
+            self.speedLabels = np.array([speed_data[i][1][[1],:] for i in valid_indices])
+            self.volLabels = np.array([volume_data[i][1][[1],:] for i in valid_indices])
 
             with h5py.File(f"{ckpt_dir}/{mode}/{mode}_speed_feature.h5", 'w') as f:
                 f.create_dataset(f"{mode}_speed_feature", data=self.speedFeature)
