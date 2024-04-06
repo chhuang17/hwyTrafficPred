@@ -46,6 +46,7 @@ def getRollingMeanDaily(selectDate: str) -> pd.DataFrame:
     sql += " ) STAC JOIN ( "
     sql += " 	SELECT "
     sql += " 		VdStaticID, "
+    sql += "        COUNT(VdStaticID), "
     sql += " 		CASE "
     sql += " 			WHEN MIN(Speed) = -99 THEN -99 "
     sql += " 			ELSE AVG(Speed) "
@@ -62,6 +63,7 @@ def getRollingMeanDaily(selectDate: str) -> pd.DataFrame:
     sql += " 		(UNIX_TIMESTAMP(DataCollectTime)-UNIX_TIMESTAMP(%(selectDate)s)) DIV 300 "
     sql += " 	FROM fwy_n5.vd_dynamic_detail_{} ".format(selectDate.replace('-',''))
     sql += " 	GROUP BY VdStaticID, (UNIX_TIMESTAMP(DataCollectTime)-UNIX_TIMESTAMP(%(selectDate)s)) DIV 300 "
+    sql += "    HAVING COUNT(VdStaticID) %% 5 = 0 "
     sql += " ) DYMC ON STAC.id = DYMC.VdStaticID "
     sql += " ORDER BY STAC.RoadDirection, STAC.LocationMile, DYMC.DataCollectTime; "
 
