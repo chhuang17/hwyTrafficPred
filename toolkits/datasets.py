@@ -41,7 +41,7 @@ def train_test_split(speedCollection, volCollection, occCollection, laneCollecti
     return trainSpeed, trainVol, trainOcc, trainNumLane, trainTunnel,\
             testSpeed, testVol, testOcc, testNumLane, testTunnel
 
-def minMaxScaler(tensor: torch.Tensor, max_speed: float = 100, max_volume: float = 240, max_occ: float = 100, max_lane: int = 4) -> torch.Tensor:
+def minMaxScaler(tensor: torch.Tensor, max_speed: float = 100, max_volume: float = 250, max_occ: float = 100, max_lane: int = 4) -> torch.Tensor:
     if (len(tensor) == 5):
         # Speed
         speed = torch.where(tensor[0]>max_speed, max_speed, tensor[0])
