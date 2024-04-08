@@ -112,7 +112,8 @@ def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, preDu
         vdGroups: The outpur of groupVDs(),
         groupKey: The key of vdGroups,
         each: The quantity of VDs would be considered as a group,
-        timeWindow: The length of period we consider, and the default value is 30 (minutes).
+        preDuration: The length of the previous period we consider, and the default value is 30 (minutes).
+        postDuration: The length of the posterior period we consider, and the default value is 5 (minutes).
 
         ---
         @Returns
@@ -139,11 +140,12 @@ def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, preDu
 
     sliceLen = preDuration//5 + postDuration//5
     for x in range(speedMatx.shape[1]//sliceLen*sliceLen-(sliceLen-1)):
-        speeds.append((speedMatx[:,x:x+sliceLen][:,:preDuration//5], speedMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
-        vols.append((volMatx[:,x:x+sliceLen][:,:preDuration//5], volMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
-        occs.append((occMatx[:,x:x+sliceLen][:,:preDuration//5], occMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
-        lanes.append((laneMatx[:,x:x+sliceLen][:,:preDuration//5], laneMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
-        tunnels.append((tunnelMatx[:,x:x+sliceLen][:,:preDuration//5], tunnelMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+        if (-99 not in speedMatx[:,x:x+sliceLen][:,-1*postDuration//5:][1,:]):
+            speeds.append((speedMatx[:,x:x+sliceLen][:,:preDuration//5], speedMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+            vols.append((volMatx[:,x:x+sliceLen][:,:preDuration//5], volMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+            occs.append((occMatx[:,x:x+sliceLen][:,:preDuration//5], occMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+            lanes.append((laneMatx[:,x:x+sliceLen][:,:preDuration//5], laneMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+            tunnels.append((tunnelMatx[:,x:x+sliceLen][:,:preDuration//5], tunnelMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
     
     return speeds, vols, occs, lanes, tunnels
 
