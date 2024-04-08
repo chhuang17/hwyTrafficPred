@@ -103,7 +103,7 @@ def groupVDs(df: pd.DataFrame, each: int) -> dict:
     
     return vdGroups
 
-def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, timeWindow: int = 30) -> tuple:
+def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, preDuration: int = 30, postDuration: int = 5) -> tuple:
     """ Generate samples for each traffic data (speed, volume, and occupancy)
         ```text
         ---
@@ -137,13 +137,13 @@ def genSamples(df: pd.DataFrame, vdGroups: dict, groupKey: str, each: int, timeW
         laneMatx[i] += tmpDf.iloc[j:k,:]['ActualLaneNum'].to_numpy()
         tunnelMatx[i] += tmpDf.iloc[j:k,:]['isTunnel'].to_numpy()
 
-    sliceLen = int((timeWindow / 5) + 1)
+    sliceLen = preDuration//5 + postDuration//5
     for x in range(speedMatx.shape[1]//sliceLen*sliceLen-(sliceLen-1)):
-        speeds.append((speedMatx[:,x:x+sliceLen][:,:-1], speedMatx[:,x:x+sliceLen][:,[-1]]))
-        vols.append((volMatx[:,x:x+sliceLen][:,:-1], volMatx[:,x:x+sliceLen][:,[-1]]))
-        occs.append((occMatx[:,x:x+sliceLen][:,:-1], occMatx[:,x:x+sliceLen][:,[-1]]))
-        lanes.append((laneMatx[:,x:x+sliceLen][:,:-1], laneMatx[:,x:x+sliceLen][:,[-1]]))
-        tunnels.append((tunnelMatx[:,x:x+sliceLen][:,:-1], tunnelMatx[:,x:x+sliceLen][:,[-1]]))
+        speeds.append((speedMatx[:,x:x+sliceLen][:,:preDuration//5], speedMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+        vols.append((volMatx[:,x:x+sliceLen][:,:preDuration//5], volMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+        occs.append((occMatx[:,x:x+sliceLen][:,:preDuration//5], occMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+        lanes.append((laneMatx[:,x:x+sliceLen][:,:preDuration//5], laneMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
+        tunnels.append((tunnelMatx[:,x:x+sliceLen][:,:preDuration//5], tunnelMatx[:,x:x+sliceLen][:,-1*postDuration//5:]))
     
     return speeds, vols, occs, lanes, tunnels
 
@@ -201,7 +201,8 @@ def concat_tables(folder: str = './nfb2023', file_format: str = 'feather'):
     df = df.loc[(df['Speed']<=120) & (df['Volume']<=3200/12)].reset_index(drop=True)    
     return df
 
-def collect_data(each_group: int = 3, data_dir: str = './nfb2023', file_format: str = 'feather'):
+def collect_data(each_group: int = 3, data_dir: str = './nfb2023', file_format: str = 'feather',
+                 preDuration: int = 30, postDuration: int = 5):
     df = concat_tables(folder=data_dir, file_format=file_format)
     
     speedCollection, volCollection, occCollection, laneCollection, tunnelCollection = [], [], [], [], []
@@ -210,7 +211,8 @@ def collect_data(each_group: int = 3, data_dir: str = './nfb2023', file_format: 
     northDf = df.loc[df['RoadDirection']=='N'].reset_index(drop=True)
     northVDGrps = groupVDs(northDf, each=each_group)
     for groupKey in northVDGrps.keys():
-        speeds, vols, occs, lanes, tunnels = genSamples(northDf, northVDGrps, groupKey, each=each_group, timeWindow=30)
+        speeds, vols, occs, lanes, tunnels = genSamples(northDf, northVDGrps, groupKey,
+                                                        each=each_group, preDuration=preDuration, postDuration=postDuration)
         speedCollection += speeds
         volCollection += vols
         occCollection += occs
@@ -221,7 +223,8 @@ def collect_data(each_group: int = 3, data_dir: str = './nfb2023', file_format: 
     southDf = df.loc[df['RoadDirection']=='S'].reset_index(drop=True)
     southVDGrps = groupVDs(southDf, each=each_group)
     for groupKey in southVDGrps.keys():
-        speeds, vols, occs, lanes, tunnels = genSamples(southDf, southVDGrps, groupKey, each=each_group, timeWindow=30)
+        speeds, vols, occs, lanes, tunnels = genSamples(southDf, southVDGrps, groupKey,
+                                                        each=each_group, preDuration=preDuration, postDuration=postDuration)
         speedCollection += speeds
         volCollection += vols
         occCollection += occs
