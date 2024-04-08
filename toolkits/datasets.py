@@ -41,32 +41,33 @@ def train_test_split(speedCollection, volCollection, occCollection, laneCollecti
     return trainSpeed, trainVol, trainOcc, trainNumLane, trainTunnel,\
             testSpeed, testVol, testOcc, testNumLane, testTunnel
 
-def minMaxScaler(tensor: torch.Tensor, max_speed: float = 100, max_volume: float = 250, max_occ: float = 100, max_lane: int = 4) -> torch.Tensor:
-    if (len(tensor) == 5):
-        # Speed
-        speed = torch.where(tensor[0]>max_speed, max_speed, tensor[0])
-        speed = torch.where(tensor[0]<0, -1, tensor[0]/max_speed).unsqueeze(0)
-
-        # Volume
-        volume = torch.where(tensor[1]>max_volume, max_volume, tensor[1])
-        volume = torch.where(tensor[1]<0, -1, tensor[1]/max_volume).unsqueeze(0)
-        
-        # Occupancy
-        occupy = torch.where(tensor[2]<0, -1, tensor[2]/max_occ).unsqueeze(0)
-
-        # Number of Lane
-        lanes = (tensor[3] / max_lane).unsqueeze(0)
-
-        return torch.cat([speed, volume, occupy, lanes, tensor[-1].unsqueeze(0)])
+def minMaxScaler(tensor: torch.Tensor,
+                 feature: str,
+                 max_speed: float = 100,
+                 max_volume: float = 250,
+                 max_occ: float = 100,
+                 max_lane: int = 4) -> torch.Tensor:
     
-    elif (len(tensor) == 2):
-        speed = torch.where(tensor[0]>max_speed, 1, tensor[0]/max_speed).unsqueeze(0)
-        volume = torch.where(tensor[1]>max_volume, 1, tensor[1]/max_volume).unsqueeze(0)
-        return torch.cat([speed, volume])
+    if (feature == 'speed'):
+        speed = torch.where(tensor>max_speed, max_speed, tensor)
+        return torch.where(speed<0, -1, speed/max_speed)
+    
+    elif (feature == 'volume'):
+        volume = torch.where(tensor>max_volume, max_volume, tensor)
+        return torch.where(volume<0, -1, volume/max_volume)
+    
+    elif (feature == 'occupancy'):
+        return torch.where(tensor<0, -1, tensor/max_occ)
+    
+    elif (feature == 'lane'):
+        return tensor/max_lane
+    
+    else:
+        return tensor
 
 
 ################################## Datasets inherited from torch.utils.data.Dataset ##################################
-class CNNDataset(Dataset):
+class ShortTermTrafficDataset(Dataset):
     def __init__(
             self,
             speed_data: list = None,
@@ -76,8 +77,8 @@ class CNNDataset(Dataset):
             tunnel_data: list = None,
             load_ckpt: bool = None,
             mode: str = None,
-            ckpt_dir: str = 'C:/Users/Home/PythonProjects/hwyTrafficPred/toolkits/cnndataset'
-    ) -> None:
+            ckpt_dir: str = '../hwyTrafficPred/toolkits/next_half_hour_data') -> None:
+        
         if (load_ckpt):
             with h5py.File(f"{ckpt_dir}/{mode}/{mode}_speed_feature.h5", 'r') as file:
                 self.speedFeature = file[f"{mode}_speed_feature"][:]
@@ -129,23 +130,27 @@ class CNNDataset(Dataset):
         return len(self.speedFeature)
     
     def __getitem__(self, idx: int) -> torch.Tensor:
-        f1 = torch.tensor(self.speedFeature[idx], dtype=torch.float).unsqueeze(0)
-        f2 = torch.tensor(self.volFeature[idx], dtype=torch.float).unsqueeze(0)
-        f3 = torch.tensor(self.occFeature[idx], dtype=torch.float).unsqueeze(0)
-        f4 = torch.tensor(self.laneFeature[idx], dtype=torch.float).unsqueeze(0)
+        f1 = minMaxScaler(torch.tensor(self.speedFeature[idx], dtype=torch.float).unsqueeze(0), feature='speed')
+        f2 = minMaxScaler(torch.tensor(self.volFeature[idx], dtype=torch.float).unsqueeze(0), feature='volume')
+        f3 = minMaxScaler(torch.tensor(self.occFeature[idx], dtype=torch.float).unsqueeze(0), feature='occupancy')
+        f4 = minMaxScaler(torch.tensor(self.laneFeature[idx], dtype=torch.float).unsqueeze(0), feature='lane')
         f5 = torch.tensor(self.tunnelFeature[idx], dtype=torch.float).unsqueeze(0)
 
-        l1 = torch.tensor(self.speedLabels[idx], dtype=torch.float).squeeze(0)
-        l2 = torch.tensor(self.volLabels[idx], dtype=torch.float).squeeze(0)
-        feature = minMaxScaler(torch.cat([f1, f2, f3, f4, f5]))
-        label = minMaxScaler(torch.cat([l1, l2]))
+        l1 = minMaxScaler(torch.tensor(self.speedLabels[idx], dtype=torch.float).squeeze(0), feature='speed')
+        l2 = minMaxScaler(torch.tensor(self.volLabels[idx], dtype=torch.float).squeeze(0), feature='volume')
+        feature = torch.cat([f1, f2, f3, f4, f5])
+        label = torch.cat([l1, l2])
         return feature, label
 
 
 ########################################## Load datasets ##########################################
-def load_next_5min(ckpt_dir: str = 'C:/Users/Home/PythonProjects/hwyTrafficPred/toolkits/cnndataset') -> tuple:
-    """ Load Dataset for short-term prediction """
-    trainDataset = CNNDataset(load_ckpt=True, mode='train', ckpt_dir=ckpt_dir)
-    testDataset = CNNDataset(load_ckpt=True, mode='test', ckpt_dir=ckpt_dir)
+def load_next_5min(ckpt_dir: str = '../hwyTrafficPred/toolkits/next_five_min_data') -> tuple:
+    trainDataset = ShortTermTrafficDataset(load_ckpt=True, mode='train', ckpt_dir=ckpt_dir)
+    testDataset = ShortTermTrafficDataset(load_ckpt=True, mode='test', ckpt_dir=ckpt_dir)
+    return trainDataset, testDataset
+
+def load_next_30min(ckpt_dir: str = '../hwyTrafficPred/toolkits/next_half_hour_data') -> tuple:
+    trainDataset = ShortTermTrafficDataset(load_ckpt=True, mode='train', ckpt_dir=ckpt_dir)
+    testDataset = ShortTermTrafficDataset(load_ckpt=True, mode='test', ckpt_dir=ckpt_dir)
     return trainDataset, testDataset
 
