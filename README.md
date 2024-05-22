@@ -26,8 +26,14 @@ This figure shows the workflow of this project. We built the data pipeline to cr
 ## Results
 There were about 8.96 million data in total, 80% were used for training (around 6.89 million) and the remaining data were used for validation (around 1.72 million). As you can see in the `validation.ipynb`, <u>__the MAPE of the volume and speed estimated values are 6.93% and 7.86%__</u>, indicating the model possesses a strong ability to predict short-term traffic.
 
+
 ## Validation Results on the Lunar New Year 2024
-Here are the prediction results of our CNN model. We chose the bottleneck of the northbound section on Freeway No.5, at the 26.705 km mark. As you can see in the figures, our model can capture the time series patterns and closely fit the real-world detected traffic flow values.
+### Heatmap Analysis
+Let's focus on the section of Hsuehshan Tunnel (雪山隧道), i.e., we concentrate on the data <u>__between 15.488K and 27.779K.__</u> As you can see in the heatmap, __26.705K is the bottleneck__ of the northbound section of Hsuehshan Tunnel (雪山隧道).
+<br><br>
+![img](images/heatmap.png)
+
+Then, let's visualize the prediction results of our CNN model. According to the heatmap shown in the previous section, we collected the vehicle detector data on 26.705K of the northbound of Freeway No.5. As you can see in the figures, our model can capture the time series patterns and closely fit the real-world detected traffic flow values.
 
 ### Volume Prediction on 2024-02-10
 ![img](images/volume_prediction_lunar_new_year_2024.png)
