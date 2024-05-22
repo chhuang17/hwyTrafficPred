@@ -26,6 +26,15 @@ This figure shows the workflow of this project. We built the data pipeline to cr
 ## Results
 There were about 8.96 million data in total, 80% were used for training (around 6.89 million) and the remaining data were used for validation (around 1.72 million). As you can see in the `validation.ipynb`, <u>__the MAPE of the volume and speed estimated values are 6.93% and 7.86%__</u>, indicating the model possesses a strong ability to predict short-term traffic.
 
+## Validation Results on the Lunar New Year 2024
+Here are the prediction results of our CNN model. We chose the bottleneck of the northbound section on Freeway No.5, at the 26.705 km mark. As you can see in the figures, our model can capture the time series patterns and closely fit the real-world detected traffic flow values.
+
+### Volume Prediction on 2024-02-10
+![img](images/volume_prediction_lunar_new_year_2024.png)
+
+### Speed Prediction on 2024-02-10
+![img](images/speed_prediction_lunar_new_year_2024.png)
+
 ## Expected Future Work
 - In Stage II, we plan to develop a long-term traffic prediction model (expected to be able to predict at least for the next 4 hours), and it is expected to be able to be generalized to other highways.
 - In Stage III, we plan to develop a front-end interface for users that can be visualized on a web page, aiming to provide road users with advanced information before departure.
