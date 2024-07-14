@@ -1,0 +1,11 @@
+*.csv
+*.pyc
+*.feather
+*.env
+*.xml.gz
+*.h5
+*.pdf
+*.pptx
+*.log
+*.png
+*.zip
