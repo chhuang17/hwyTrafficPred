@@ -91,7 +91,7 @@ def groupVDs(df: pd.DataFrame, each: int) -> dict:
         vdGroups.setdefault(f"{vdid}", [])
     for no, vdid in enumerate(df['VDID'].unique()):
         startIdx = max(no-lb, 0)
-        endIdx = min(no+ub, len(df['VDID'].unique())-1)
+        endIdx = min(no+ub, df['VDID'].nunique())
         vdGroups[f"{vdid}"] += list(df['VDID'].unique()[startIdx:no]) + list(df['VDID'].unique()[no:endIdx])
 
     delList = []
