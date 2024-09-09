@@ -8,3 +8,4 @@
 *.pptx
 *.log
 *.zip
+__pycache__/
