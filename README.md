@@ -27,6 +27,14 @@ This figure shows the workflow of this project. We built the data pipeline to cr
 There were about 8.96 million data in total, 80% were used for training (around 6.89 million) and the remaining data were used for validation (around 1.72 million). As you can see in the `validation.ipynb`, <u>__the MAPE of the volume and speed estimated values are 6.93% and 7.86%__</u>, indicating the model possesses a strong ability to predict short-term traffic.
 
 
+## Validation Results in Each Road Section
+### Southbound
+![img](images/validation_southbound.png)
+
+### Northbound
+![img](images/validation_northbound.png)
+
+
 ## Validation Results on the Lunar New Year 2024
 ### Heatmap Analysis
 Let's focus on the section of Hsuehshan Tunnel (雪山隧道), i.e., we concentrate on the data <u>__between 15.488K and 27.779K.__</u> As you can see in the heatmap, __26.705K is the bottleneck__ of the northbound section of Hsuehshan Tunnel (雪山隧道).
