@@ -49,6 +49,6 @@ Then, let's visualize the prediction results of our CNN model. According to the 
 ### Speed Prediction on 2024-02-10
 ![img](images/speed_prediction_lunar_new_year_2024.png)
 
-## Expected Future Work
+<!-- ## Expected Future Work
 - In Stage II, we plan to develop a long-term traffic prediction model (expected to be able to predict at least for the next 4 hours), and it is expected to be able to be generalized to other highways.
-- In Stage III, we plan to develop a front-end interface for users that can be visualized on a web page, aiming to provide road users with advanced information before departure.
+- In Stage III, we plan to develop a front-end interface for users that can be visualized on a web page, aiming to provide road users with advanced information before departure. -->
