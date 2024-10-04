@@ -1,7 +1,11 @@
-from tisvcloud.PublicClass import MOTCLiveData
+import os
+import sys
 import xml.etree.ElementTree as ET
 import gzip
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath('/app/lib/tisvcloud')))
+from tisvcloud.PublicClass import MOTCLiveData
 
 
 __version__ = "0.1.0"

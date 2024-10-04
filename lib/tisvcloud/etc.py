@@ -1,6 +1,10 @@
-from tisvcloud.PublicClass import TDCSData
+import os
+import sys
 import pandas as pd
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath('/app/lib/tisvcloud')))
+from tisvcloud.PublicClass import TDCSData
 
 
 __version__ = "0.1.0"

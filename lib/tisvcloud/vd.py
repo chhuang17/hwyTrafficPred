@@ -1,7 +1,11 @@
-from tisvcloud.PublicClass import MOTCLiveData
+import os
+import sys
 import xml.etree.ElementTree as ET
 import gzip
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath('/app/lib/tisvcloud')))
+from tisvcloud.PublicClass import MOTCLiveData
 
 
 __version__ = "0.1.1"
@@ -120,7 +124,7 @@ def volume(VDID, date, hour, minute, vehType="all"):
                         vdlive.delete()
                         return f"{VDID} 設備故障!"
                         
-def speed(VDID, date, hour, minute):
+def speed(VDID, date, hour, minute, freeFlowSpeed=100):
     volume = 0
     volumeXspeed = 0
     vdlive = MOTCLiveData(date, hour, minute, dataname="VD")
