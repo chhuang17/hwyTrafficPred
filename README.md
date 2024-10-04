@@ -21,7 +21,7 @@ These five features served as a channel respectively, then stacked them all as a
 
 This figure shows the workflow of this project. We built the data pipeline to crawl the traffic data from [tisvcloud.freeway.gov.tw](https://tisvcloud.freeway.gov.tw/), then stored them in the local MySQL database. After that, we queried data from the MySQL database and used Python to transform them into 3-D dimensional tensors, and saved them in `.h5` format. In the training process, we loaded these data through the PyTorch `Dataloader` and put them into the CNN regression model built by the PyTorch framework.
 
-![img](images/work-flow.png)
+![img](assets/work-flow.png)
 
 ## Results
 There were about 8.96 million data in total, 80% were used for training (around 6.89 million) and the remaining data were used for validation (around 1.72 million). As you can see in the `validation.ipynb`, <u>__the MAPE of the volume and speed estimated values are 6.93% and 7.86%__</u>, indicating the model possesses a strong ability to predict short-term traffic.
@@ -29,25 +29,25 @@ There were about 8.96 million data in total, 80% were used for training (around 
 
 ## Validation Results in Each Road Section
 ### Southbound
-![img](images/validation_southbound.png)
+![img](assets/validation_southbound.png)
 
 ### Northbound
-![img](images/validation_northbound.png)
+![img](assets/validation_northbound.png)
 
 
 ## Validation Results on the Lunar New Year 2024
 ### Heatmap Analysis
 Let's focus on the section of Hsuehshan Tunnel (雪山隧道), i.e., we concentrate on the data <u>__between 15.488K and 27.779K.__</u> As you can see in the heatmap, __26.705K is the bottleneck__ of the northbound section of Hsuehshan Tunnel (雪山隧道).
 <br><br>
-![img](images/heatmap.png)
+![img](assets/heatmap.png)
 
 Then, let's visualize the prediction results of our CNN model. According to the heatmap shown in the previous section, we collected the vehicle detector data on 26.705K of the northbound of Freeway No.5. As you can see in the figures, our model can capture the time series patterns and closely fit the real-world detected traffic flow values.
 
 ### Volume Prediction on 2024-02-10
-![img](images/volume_prediction_lunar_new_year_2024.png)
+![img](assets/volume_prediction_lunar_new_year_2024.png)
 
 ### Speed Prediction on 2024-02-10
-![img](images/speed_prediction_lunar_new_year_2024.png)
+![img](assets/speed_prediction_lunar_new_year_2024.png)
 
 <!-- ## Expected Future Work
 - In Stage II, we plan to develop a long-term traffic prediction model (expected to be able to predict at least for the next 4 hours), and it is expected to be able to be generalized to other highways.
