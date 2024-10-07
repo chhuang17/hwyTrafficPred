@@ -13,7 +13,9 @@ def train_test_split(speeds: List,
                      tunnels: List,
                      train_size: float = None,
                      test_size: float = None,
-                     random_number: int = 42):
+                     random_number: int = 42
+                     ) -> Tuple[List, List, List, List, List,
+                                List, List, List, List, List]:
     np.random.seed(random_number)
     if (train_size):
         train_indices = np.random.choice(
