@@ -1,7 +1,5 @@
-from sqlalchemy import create_engine, MetaData, text, insert
-from datetime import datetime, timedelta
-from tisvcloud import vd
-from dotenv import load_dotenv
+import os
+import sys
 import pandas as pd
 import logging
 import xml.etree.ElementTree as ET
@@ -9,6 +7,12 @@ import gzip
 import os
 import shutil
 import re
+from sqlalchemy import create_engine, MetaData, text, insert
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+sys.path.insert(0, os.path.dirname(os.path.abspath('/app/lib')))
+from lib.tisvcloud import vd
 
 
 logging.basicConfig(
